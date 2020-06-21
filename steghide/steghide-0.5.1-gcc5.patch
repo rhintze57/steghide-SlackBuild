@@ -1,0 +1,82 @@
+--- steghide-0.5.1/src/Graph.cc.old	2016-03-04 05:32:00.339326834 -0500
++++ steghide-0.5.1/src/Graph.cc	2016-03-04 05:33:42.072357275 -0500
+@@ -32,6 +32,7 @@
+ #include "common.h"
+ #include "msg.h"
+ #include "wrapper_hash_set.h"
++#include "limits.h"
+ 
+ Graph::Graph (CvrStgFile *cvr, const BitString& emb, Selector& sel)
+ {
+--- steghide-0.5.1/src/AuSampleValues.cc.old	2016-03-04 05:40:34.246538098 -0500
++++ steghide-0.5.1/src/AuSampleValues.cc	2016-03-04 05:41:57.314381772 -0500
+@@ -21,17 +21,17 @@
+ #include "AuSampleValues.h"
+ 
+ // AuMuLawSampleValue
+-const BYTE AuMuLawSampleValue::MinValue = 0 ;
+-const BYTE AuMuLawSampleValue::MaxValue = BYTE_MAX ;
++template<> const BYTE AuMuLawSampleValue::MinValue = 0 ;
++template<> const BYTE AuMuLawSampleValue::MaxValue = BYTE_MAX ;
+ 
+ // AuPCM8SampleValue
+-const SBYTE AuPCM8SampleValue::MinValue = SBYTE_MIN ;
+-const SBYTE AuPCM8SampleValue::MaxValue = SBYTE_MAX ;
++template<> const SBYTE AuPCM8SampleValue::MinValue = SBYTE_MIN ;
++template<> const SBYTE AuPCM8SampleValue::MaxValue = SBYTE_MAX ;
+ 
+ // AuPCM16SampleValue
+-const SWORD16 AuPCM16SampleValue::MinValue = SWORD16_MIN ;
+-const SWORD16 AuPCM16SampleValue::MaxValue = SWORD16_MAX ;
++template<> const SWORD16 AuPCM16SampleValue::MinValue = SWORD16_MIN ;
++template<> const SWORD16 AuPCM16SampleValue::MaxValue = SWORD16_MAX ;
+ 
+ // AuPCM32SampleValue
+-const SWORD32 AuPCM32SampleValue::MinValue = SWORD32_MIN ;
+-const SWORD32 AuPCM32SampleValue::MaxValue = SWORD32_MAX ;
++template<> const SWORD32 AuPCM32SampleValue::MinValue = SWORD32_MIN ;
++template<> const SWORD32 AuPCM32SampleValue::MaxValue = SWORD32_MAX ;
+--- steghide-0.5.1/src/AuData.h.old	2016-03-04 06:09:54.367407121 -0500
++++ steghide-0.5.1/src/AuData.h	2016-03-04 06:11:52.445606922 -0500
+@@ -26,22 +26,30 @@
+ 
+ // AuMuLawAudioData
+ typedef AudioDataImpl<AuMuLaw,BYTE> AuMuLawAudioData ;
++template<>
+ inline BYTE AuMuLawAudioData::readValue (BinaryIO* io) const { return (io->read8()) ; }
++template<>
+ inline void AuMuLawAudioData::writeValue (BinaryIO* io, BYTE v) const { io->write8(v) ; }
+ 
+ // AuPCM8AudioData
+ typedef AudioDataImpl<AuPCM8,SBYTE> AuPCM8AudioData ;
++template<>
+ inline SBYTE AuPCM8AudioData::readValue (BinaryIO* io) const { return ((SBYTE) io->read8()) ; }
++template<>
+ inline void AuPCM8AudioData::writeValue (BinaryIO* io, SBYTE v) const { io->write8((BYTE) v) ; }
+ 
+ // AuPCM16AudioData
+ typedef AudioDataImpl<AuPCM16,SWORD16> AuPCM16AudioData ;
++template<>
+ inline SWORD16 AuPCM16AudioData::readValue (BinaryIO* io) const { return ((SWORD16) io->read16_be()) ; }
++template<>
+ inline void AuPCM16AudioData::writeValue (BinaryIO* io, SWORD16 v) const { io->write16_be((UWORD16) v) ; }
+ 
+ // AuPCM32AudioData
+ typedef AudioDataImpl<AuPCM32,SWORD32> AuPCM32AudioData ;
++template<>
+ inline SWORD32 AuPCM32AudioData::readValue (BinaryIO* io) const { return ((SWORD32) io->read32_be()) ; }
++template<>
+ inline void AuPCM32AudioData::writeValue (BinaryIO* io, SWORD32 v) const { io->write32_be((UWORD32) v) ; }
+ 
+ #endif // ndef SH_AUDATA_H
+--- steghide-0.5.1/src/MHashPP.cc.old	2016-03-04 06:23:59.676007899 -0500
++++ steghide-0.5.1/src/MHashPP.cc	2016-03-04 07:10:44.260949989 -0500
+@@ -120,7 +120,7 @@
+ 
+ std::string MHashPP::getAlgorithmName (hashid id)
+ {
+-	char *name = mhash_get_hash_name (id) ;
++	char *name = (char *) mhash_get_hash_name (id) ;
+ 	std::string retval ;
+ 	if (name == NULL) {
+ 		retval = std::string ("<algorithm not found>") ;

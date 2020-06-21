@@ -1,0 +1,26 @@
+SOLVED !
+
+Steps to recompile on CentOS (Linux 3.10.0-229.4.2.el7.x86_64) :
+>> Ensure MHash zlib libtool and GCC C++ compiler are installed (with their -devel headers)
+
+>> Insert in src/Graph.cc (to avoid an undefined ULONG_MAX error msg)
+#include "limits.h"
+
+>> Prefix every Const in src/AuSampleValues.cc and src/AuData.h by 
+template<>
+
+>> Add a -fpermissive compilation flag when making MHashPP.o or modify MHashPP.cc (to avoid invalid conversion error like below)
+MHashPP.cc:123:38: error: invalid conversion from ?uint8_t* {aka unsigned char*}? to ?char*? [-fpermissive]
+  char *name = mhash_get_hash_name (id) ;
+g++ -DHAVE_CONFIG_H -I. -I. -I..  -DLOCALEDIR=\"/usr/local/share/locale\"   -O2 -Wall -fpermissive -MT MHashPP.o -MD -MP -MF ".deps/MHashPP.Tpo" -c -o MHashPP.o `test -f 'MHashPP.cc' || echo './'`MHashPP.cc;
+
+
+Best regards
+Bruno
+From: brunorivier@...
+To: steghide-devel@...
+Date: Mon, 8 Jun 2015 17:11:15 +0200
+Subject: [steghide-devel] 0.5.1 can't make steghide in x86_64 CentOs ? AudioDataImpl requires 'template<>' syntax
+
+
+
